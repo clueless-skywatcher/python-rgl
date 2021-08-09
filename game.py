@@ -5,6 +5,7 @@ import tcod
 
 from rgl.entity import Entity
 from rgl.key_handler import InputHandler
+from rgl.map.game_map import GameMap
 from rgl.renderer import Renderer
 
 os.environ['path'] = f"{os.path.dirname(sys.executable)};{os.environ['path']}"
@@ -12,11 +13,21 @@ os.environ['path'] = f"{os.path.dirname(sys.executable)};{os.environ['path']}"
 import glob
 
 class MainScript():
-    def __init__(self, scr_width, scr_height, player_symbol = '@', scr_title = 'RGL') -> None:
+    def __init__(self, scr_width, scr_height, map_width, map_height, player_symbol = '@', scr_title = 'RGL') -> None:
         self.scr_width = scr_width
         self.scr_height = scr_height
         self.scr_title = scr_title
         self.player_symbol = player_symbol
+        
+        self.map_width = map_width
+        self.map_height = map_height
+
+        self.COLORS = {
+            "DarkWall": tcod.Color(0, 0, 100),
+            "DarkGround": tcod.Color(50, 50, 150)
+        }
+
+        self.game_map = GameMap(map_width, map_height)
 
         self.player_entity = Entity(int(self.scr_width / 2), int(self.scr_height / 2), self.player_symbol, tcod.white)
         npc_entity = Entity(int(self.scr_width / 2 - 5), int(self.scr_height / 2 - 5), 'g', tcod.yellow)
@@ -30,14 +41,14 @@ class MainScript():
         
         key = tcod.Key()
         mouse = tcod.Mouse()
-        renderer = Renderer(console, self.entities)
+        renderer = Renderer(console, self.entities, self.game_map)
 
         while not tcod.console_is_window_closed():
             tcod.sys_check_for_event(tcod.EVENT_KEY_PRESS, key, mouse)
             # tcod.console_set_default_foreground(console, tcod.white)
             # tcod.console_put_char(console, self.player_entity.x, self.player_entity.y, self.player_symbol, tcod.BKGND_NONE)
             # tcod.console_blit(console, 0, 0, self.scr_width, self.scr_height, 0, 0, 0)
-            renderer.render_all(self.scr_width, self.scr_height)
+            renderer.render_all(self.scr_width, self.scr_height, self.COLORS)
             tcod.console_flush()
 
             # tcod.console_put_char(console, self.player_entity.x, self.player_entity.y, ' ', tcod.BKGND_NONE)
@@ -59,5 +70,5 @@ class MainScript():
                 tcod.console_set_fullscreen(not tcod.console_is_fullscreen())
 
 if __name__ == '__main__':
-    game = MainScript(80, 50)
+    game = MainScript(80, 50, 80, 45)
     game.run()

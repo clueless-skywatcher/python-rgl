@@ -1,11 +1,23 @@
 import tcod
 
 class Renderer:
-    def __init__(self, console, entities) -> None:
+    def __init__(self, console, entities, game_map) -> None:
         self.console = console
         self.entities = entities
+        self.game_map = game_map
 
-    def render_all(self, width, height):
+    def render_all(self, width, height, render_color_dict):
+        for y in range(self.game_map.height):
+            for x in range(self.game_map.width):
+                wall = self.game_map.tiles[x][y].block_sight
+                if wall:
+                    tcod.console_set_char_background(self.console, 
+                        x, y, render_color_dict.get("DarkWall"), tcod.BKGND_SET)
+                else:
+                    tcod.console_set_char_background(self.console, 
+                        x, y, render_color_dict.get("DarkGround"), tcod.BKGND_SET)
+
+
         for entity in self.entities:
             self.draw_entity(entity)
 
