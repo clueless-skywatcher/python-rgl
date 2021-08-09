@@ -1,8 +1,11 @@
+
 import sys
 import os
 import tcod
 
+from rgl.entity import Entity
 from rgl.key_handler import InputHandler
+from rgl.renderer import Renderer
 
 os.environ['path'] = f"{os.path.dirname(sys.executable)};{os.environ['path']}"
 
@@ -15,8 +18,10 @@ class MainScript():
         self.scr_title = scr_title
         self.player_symbol = player_symbol
 
-        self.player_x = int(self.scr_width / 2)
-        self.player_y = int(self.scr_height / 2)
+        self.player_entity = Entity(int(self.scr_width / 2), int(self.scr_height / 2), self.player_symbol, tcod.white)
+        npc_entity = Entity(int(self.scr_width / 2 - 5), int(self.scr_height / 2 - 5), 'g', tcod.yellow)
+
+        self.entities = [self.player_entity, npc_entity]
 
     def run(self):
         tcod.console_set_custom_font('assets/arial10x10.png', tcod.FONT_TYPE_GREYSCALE | tcod.FONT_LAYOUT_TCOD)
@@ -25,15 +30,18 @@ class MainScript():
         
         key = tcod.Key()
         mouse = tcod.Mouse()
+        renderer = Renderer(console, self.entities)
 
         while not tcod.console_is_window_closed():
             tcod.sys_check_for_event(tcod.EVENT_KEY_PRESS, key, mouse)
-            tcod.console_set_default_foreground(console, tcod.white)
-            tcod.console_put_char(console, self.player_x, self.player_y, self.player_symbol, tcod.BKGND_NONE)
-            tcod.console_blit(console, 0, 0, self.scr_width, self.scr_height, 0, 0, 0)
+            # tcod.console_set_default_foreground(console, tcod.white)
+            # tcod.console_put_char(console, self.player_entity.x, self.player_entity.y, self.player_symbol, tcod.BKGND_NONE)
+            # tcod.console_blit(console, 0, 0, self.scr_width, self.scr_height, 0, 0, 0)
+            renderer.render_all(self.scr_width, self.scr_height)
             tcod.console_flush()
 
-            tcod.console_put_char(console, self.player_x, self.player_y, ' ', tcod.BKGND_NONE)
+            # tcod.console_put_char(console, self.player_entity.x, self.player_entity.y, ' ', tcod.BKGND_NONE)
+            renderer.clear_all()
 
             key_handler = InputHandler()
             move = key_handler.handle_key(key).get("move")
@@ -42,8 +50,7 @@ class MainScript():
 
             if move:
                 dx, dy = move
-                self.player_x += dx
-                self.player_y += dy
+                self.player_entity.move(dx, dy)
 
             if exit:
                 return True
