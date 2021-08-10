@@ -13,7 +13,13 @@ os.environ['path'] = f"{os.path.dirname(sys.executable)};{os.environ['path']}"
 import glob
 
 class MainScript():
-    def __init__(self, scr_width, scr_height, map_width, map_height, player_symbol = '@', scr_title = 'RGL') -> None:
+    def __init__(self, scr_width, scr_height, map_width, map_height, 
+        player_symbol = '@', 
+        scr_title = 'RGL', 
+        max_rooms = 30, 
+        room_min_size = 6,
+        room_max_size = 10
+    ) -> None:
         self.scr_width = scr_width
         self.scr_height = scr_height
         self.scr_title = scr_title
@@ -21,6 +27,10 @@ class MainScript():
         
         self.map_width = map_width
         self.map_height = map_height
+
+        self.max_rooms = max_rooms
+        self.room_min_size = room_min_size
+        self.room_max_size = room_max_size
 
         self.COLORS = {
             "DarkWall": tcod.Color(0, 0, 100),
@@ -33,6 +43,7 @@ class MainScript():
         npc_entity = Entity(int(self.scr_width / 2 - 5), int(self.scr_height / 2 - 5), 'g', tcod.yellow)
 
         self.entities = [self.player_entity, npc_entity]
+        self.game_map.build_map(max_rooms, room_min_size, room_max_size, map_width, map_height, self.player_entity)
 
     def run(self):
         tcod.console_set_custom_font('assets/arial10x10.png', tcod.FONT_TYPE_GREYSCALE | tcod.FONT_LAYOUT_TCOD)
@@ -61,7 +72,8 @@ class MainScript():
 
             if move:
                 dx, dy = move
-                self.player_entity.move(dx, dy)
+                if not self.game_map.is_blocked(self.player_entity.x + dx, self.player_entity.y + dy):
+                    self.player_entity.move(dx, dy)
 
             if exit:
                 return True
